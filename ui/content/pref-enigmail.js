@@ -25,6 +25,8 @@ var gOrigMaxIdle = "-";
 function displayPrefs(showDefault, showPrefs, setPrefs) {
   EnigmailLog.DEBUG("pref-enigmail.js displayPrefs\n");
 
+  displayConfirmBeforeSendingPrefs(showDefault, showPrefs, setPrefs);
+
   var s = gEnigmailSvc;
 
   var obj = {};
@@ -107,6 +109,36 @@ function displayPrefs(showDefault, showPrefs, setPrefs) {
   }
 }
 
+function displayConfirmBeforeSendingPrefs(showDefault, showPrefs, setPrefs) {
+  var values = 0;
+
+  if (showDefault) {
+    values = EnigmailPrefs.decomposeConfirmBeforeSending(EnigGetDefaultPref("confirmBeforeSending"));
+  }
+  else {
+    values = EnigmailPrefs.decomposeConfirmBeforeSending(EnigGetPref("confirmBeforeSending"));
+  }
+
+  if (showPrefs) {
+    document.getElementById("confirmBeforeSendingEncrypted").setAttribute("checked", values.encrypted);
+    document.getElementById("confirmBeforeSendingUnencrypted").setAttribute("checked", values.unencrypted);
+    document.getElementById("confirmBeforeSendingSigned").setAttribute("checked", values.signed);
+    document.getElementById("confirmBeforeSendingUnsigned").setAttribute("checked", values.unsigned);
+    document.getElementById("confirmBeforeSendingRules").setAttribute("checked", values.rules);
+
+    updateBasicConfirmBeforeSendingPrefs();
+  }
+
+  if (setPrefs) {
+    EnigSetPref("confirmBeforeSending", EnigmailPrefs.composeConfirmBeforeSending(
+      document.getElementById("confirmBeforeSendingEncrypted").checked,
+      document.getElementById("confirmBeforeSendingUnencrypted").checked,
+      document.getElementById("confirmBeforeSendingSigned").checked,
+      document.getElementById("confirmBeforeSendingUnsigned").checked,
+      document.getElementById("confirmBeforeSendingRules").checked));
+  }
+}
+
 function prefOnLoad() {
   EnigmailLog.DEBUG("pref-enigmail.js: prefOnLoad()\n");
 
@@ -137,6 +169,7 @@ function prefOnLoad() {
     else {
       EnigCollapseAdvanced(document.getElementById("prefTabBox"), "collapsed", null);
       EnigCollapseAdvanced(document.getElementById("enigPrefTabPanel"), "hidden", null);
+      EnigCollapseAdvanced(document.getElementById("enigmail_pref_confirm_before_sending"), "hidden", null);
       enigShowUserModeButtons(gAdvancedMode);
     }
 
@@ -157,6 +190,7 @@ function prefOnLoad() {
   if ((!window.arguments) || (window.arguments[0].clientType != "seamonkey")) {
     EnigCollapseAdvanced(document.getElementById("prefTabBox"), "collapsed", null);
     EnigCollapseAdvanced(document.getElementById("enigPrefTabPanel"), "hidden", null);
+    EnigCollapseAdvanced(document.getElementById("enigmail_pref_confirm_before_sending"), "hidden", null);
   }
 
   // init "saved manual preferences" with current settings:
@@ -294,9 +328,11 @@ function disableManually(disable) {
     "autoSendEncryptedIfKeys",
     "confirmBeforeSendingNever",
     "confirmBeforeSendingAlways",
-    "confirmBeforeSendingIfEncrypted",
-    "confirmBeforeSendingIfNotEncrypted",
-    "confirmBeforeSendingIfRules",
+    "confirmBeforeSendingEncrypted",
+    "confirmBeforeSendingUnencrypted",
+    "confirmBeforeSendingSigned",
+    "confirmBeforeSendingUnsigned",
+    "confirmBeforeSendingRules",
   ];
   var elem;
   for (var i = 0; i < elems.length; ++i) {
@@ -310,13 +346,14 @@ function disableManually(disable) {
   }
 }
 
+
+
 function updateSendingPrefs() {
   EnigDisplayRadioPref("acceptedKeys", EnigGetPref("acceptedKeys"),
     gEnigAcceptedKeys);
   EnigDisplayRadioPref("autoSendEncrypted", EnigGetPref("autoSendEncrypted"),
     gEnigAutoSendEncrypted);
-  EnigDisplayRadioPref("confirmBeforeSending", EnigGetPref("confirmBeforeSending"),
-    gEnigConfirmBeforeSending);
+
   gEnigEncryptionModel = EnigGetPref("encryptionModel");
   disableManually(gEnigEncryptionModel === 0);
   displayPrefs(false, true, false);
@@ -329,7 +366,12 @@ function resetSendingPrefsConvenient() {
   gSavedManualPrefKeepSettingsForReply = document.getElementById("enigmail_keepSettingsForReply").checked;
   gSavedManualPrefAcceptedKeys = document.getElementById("enigmail_acceptedKeys").value;
   gSavedManualPrefAutoSendEncrypted = document.getElementById("enigmail_autoSendEncrypted").value;
-  gSavedManualPrefConfirmBeforeSending = document.getElementById("enigmail_confirmBeforeSending").value;
+  gSavedManualPrefConfirmBeforeSending = EnigmailPrefs.composeConfirmBeforeSending(
+    document.getElementById("confirmBeforeSendingEncrypted").checked,
+    document.getElementById("confirmBeforeSendingUnencrypted").checked,
+    document.getElementById("confirmBeforeSendingSigned").checked,
+    document.getElementById("confirmBeforeSendingUnsigned").checked,
+    document.getElementById("confirmBeforeSendingRules").checked);
 
   // switch encryption model:
   gEnigEncryptionModel = 0; // convenient encryption settings
@@ -367,6 +409,67 @@ function resetSendingPrefsManually() {
   EnigSetPref("confirmBeforeSending", gEnigConfirmBeforeSending);
 
   updateSendingPrefs();
+}
+
+function setAllConfirmBeforeSendingPrefs(on) {
+  EnigmailLog.DEBUG("pref-enigmail.js: setAllConfirmBeforeSendingPrefs(" + on.toString() + ")\n");
+
+  var elems = [
+    "confirmBeforeSendingEncrypted",
+    "confirmBeforeSendingUnencrypted",
+    "confirmBeforeSendingSigned",
+    "confirmBeforeSendingUnsigned",
+    "confirmBeforeSendingRules",
+  ];
+
+  for (var i = 0; i < elems.length; ++i) {
+    var elem = document.getElementById(elems[i]);
+    if (on) {
+      elem.checked = true;
+    }
+    else {
+      elem.removeAttribute("checked");
+    }
+  }
+
+  var radiogrp = document.getElementById("confirmBeforeSending");
+  if (on) {
+    radiogrp.value = "always";
+  }
+  else {
+    radiogrp.value = "never";
+  }
+}
+
+function updateBasicConfirmBeforeSendingPrefs() {
+  EnigmailLog.DEBUG("pref-enigmail.js: updateBasicConfirmBeforeSendingPrefs()\n");
+
+  var none = true;
+  var all = true;
+  var elems = [
+    "confirmBeforeSendingEncrypted",
+    "confirmBeforeSendingUnencrypted",
+    "confirmBeforeSendingSigned",
+    "confirmBeforeSendingUnsigned",
+    "confirmBeforeSendingRules",
+  ];
+
+  for (var i = 0; i < elems.length; ++i) {
+    var elem = document.getElementById(elems[i]);
+
+    none = none && !elem.checked;
+    all = all && elem.checked;
+  }
+
+  if (none) {
+    setAllConfirmBeforeSendingPrefs(false);
+  }
+  else if (all) {
+    setAllConfirmBeforeSendingPrefs(true);
+  }
+  else if (!none && !all) {
+    document.getElementById("confirmBeforeSending").selectedIndex = -1;
+  }
 }
 
 function resetRememberedValues() {
@@ -428,6 +531,13 @@ function prefOnAccept() {
     // because gpg-agent deletes cache upon changing timeout settings
     EnigmailGpgAgent.setMaxIdlePref(maxIdle);
   }
+
+  EnigSetPref("confirmBeforeSending", EnigmailPrefs.composeConfirmBeforeSending(
+    document.getElementById("confirmBeforeSendingEncrypted").checked,
+    document.getElementById("confirmBeforeSendingUnencrypted").checked,
+    document.getElementById("confirmBeforeSendingSigned").checked,
+    document.getElementById("confirmBeforeSendingUnsigned").checked,
+    document.getElementById("confirmBeforeSendingRules").checked));
 
   EnigSavePrefs();
 
@@ -516,6 +626,7 @@ function enigSwitchAdvancedMode(expertUser) {
     // Thunderbird
     EnigCollapseAdvanced(document.getElementById("enigPrefTabPanel"), "hidden", null);
     EnigCollapseAdvanced(prefTabBox, "collapsed", null);
+    EnigCollapseAdvanced(document.getElementById("enigmail_pref_confirm_before_sending"), "hidden", null);
   }
   else {
     // Seamonkey

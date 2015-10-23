@@ -3240,23 +3240,23 @@ Enigmail.msg = {
 
       // process whether final confirmation is necessary
       var confirm = false;
-      var conf = EnigmailPrefs.getPref("confirmBeforeSending");
-      switch (conf) {
-        case 0: // never
-          confirm = false;
-          break;
-        case 1: // always
-          confirm = true;
-          break;
-        case 2: // if send encrypted
-          confirm = ((sendFlags & ENCRYPT) == ENCRYPT);
-          break;
-        case 3: // if send unencrypted
-          confirm = ((sendFlags & ENCRYPT) === 0);
-          break;
-        case 4: // if encryption changed due to rules
-          confirm = ((sendFlags & ENCRYPT) != (this.sendMode & ENCRYPT));
-          break;
+      var conf = EnigmailPrefs.decomposeConfirmBeforeSending(EnigmailPrefs.getPref("confirmBeforeSending"));
+
+      if (conf.encrypted) {
+        confirm |= ((sendFlags & ENCRYPT) == ENCRYPT);
+      }
+      if (conf.unencrypted) {
+        confirm |= ((sendFlags & ENCRYPT) === 0);
+      }
+      if (conf.signed) {
+        confirm |= ((sendFlags & SIGN) == SIGN);
+      }
+      if (conf.unsigned) {
+        confirm |= ((sendFlags & SIGN) === 0);
+      }
+      if (conf.rules) {
+        confirm |= ((sendFlags & ENCRYPT) != (this.sendMode & ENCRYPT));
+        confirm |= ((sendFlags & SIGN) != (this.sendMode & SIGN));
       }
 
       // double check that no internal error did result in broken promise of encryption

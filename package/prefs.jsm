@@ -206,5 +206,103 @@ var EnigmailPrefs = {
     }
 
     return prefObj;
+  },
+
+  /*
+   * ...000 Never   \
+   * ...001 Always   |
+   * ...010 Enc IS    > Legacy
+   * ...011 Enc NOT  |
+   * ...100 Rules   /
+   *
+   * 001... Sig IS
+   * 010... Sig NOT
+   * 100... Enc IS and NOT
+   */
+  decomposeConfirmBeforeSending: function(_val) {
+    var val = parseInt(_val);
+    var ret = {
+      'encrypted': false,
+      'unencrypted': false,
+      'signed': false,
+      'unsigned': false,
+      'rules': false
+    };
+
+    if (val === 0) {
+      return ret;
+    }
+    else if (val == 1) {
+      return {
+        'encrypted': true,
+        'unencrypted': true,
+        'signed': true,
+        'unsigned': true,
+        'rules': true
+      };
+    }
+
+    if ((val & 3) == 2) {
+      ret.encrypted = true;
+    }
+    else if ((val & 3) == 3) {
+      ret.unencrypted = true;
+    }
+
+      if ((val & 4) == 4) {
+      ret.rules = true;
+    }
+
+    if ((val & 8) == 8) {
+      ret.signed = true;
+    }
+
+    if ((val & 16) == 16) {
+      ret.unsigned = true;
+    }
+
+    if ((val & 32) == 32) {
+      ret.encrypted = true;
+      ret.unencrypted = true;
+    }
+
+    EnigmailLog.DEBUG("val ret: " + JSON.stringify(ret) + "\n");
+    return ret;
+  },
+
+  composeConfirmBeforeSending: function(enc, unenc, sign, unsign, rules) {
+    if (!enc && !unenc && !sign && !unsign && !rules) {
+      return 0;
+    }
+    else if (enc && unenc && sign && unsign && rules) {
+      return 1;
+    }
+    else {
+      var ret = 0;
+
+      if (rules) {
+        ret |= 4;
+      }
+
+      if (enc && !unenc) {
+        ret |= 2;
+      }
+      else if (!enc && unenc) {
+        ret |= 3;
+      }
+      else if(enc && unenc) {
+        ret |= 32;
+      }
+
+      if (sign) {
+        ret |= 8;
+      }
+
+      if (unsign) {
+        ret |= 16;
+      }
+
+      return ret;
+    }
   }
 };

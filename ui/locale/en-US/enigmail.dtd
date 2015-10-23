@@ -227,17 +227,21 @@
 <!ENTITY enigmail.acceptedKeysAllUsable.label     "All usable keys">
 <!ENTITY enigmail.acceptedKeysAllUsable.tooltip   "Accept all keys that are neither disabled by you nor revoked/expired by the owner. Technically, this uses the GPG option '--trust-model always'.">
 
-<!ENTITY enigmail.confirmBeforeSendingOption.label           "Confirm before sending">
-<!ENTITY enigmail.confirmBeforeSendingNever.label            "Never">
-<!ENTITY enigmail.confirmBeforeSendingNever.tooltip          "Don't display information dialog about signing/encryption before sending a message">
-<!ENTITY enigmail.confirmBeforeSendingAlways.label           "Always">
-<!ENTITY enigmail.confirmBeforeSendingAlways.tooltip         "Always display information dialog about signing/encryption before sending a message">
-<!ENTITY enigmail.confirmBeforeSendingIfEncrypted.label      "If encrypted">
-<!ENTITY enigmail.confirmBeforeSendingIfEncrypted.tooltip    "Display information dialog about signing/encryption before sending an ENCRYPTED message">
-<!ENTITY enigmail.confirmBeforeSendingIfNotEncrypted.label   "If unencrypted">
-<!ENTITY enigmail.confirmBeforeSendingIfNotEncrypted.tooltip "Display information dialog about signing/encryption before sending an UNENCRYPTED message">
-<!ENTITY enigmail.confirmBeforeSendingIfRules.label          "If rules changed the default encryption setting">
-<!ENTITY enigmail.confirmBeforeSendingIfRules.tooltip        "Display information dialog about signing/encryption before sending, if your preference regarding encryption was changed by a per-recipient rule or auto encryption">
+<!ENTITY enigmail.confirmBeforeSendingOption.label         "Confirm before sending">
+<!ENTITY enigmail.confirmBeforeSendingNever.label          "Never">
+<!ENTITY enigmail.confirmBeforeSendingNever.tooltip        "Don't display information dialog about signing/encryption before sending a message.">
+<!ENTITY enigmail.confirmBeforeSendingAlways.label         "Always">
+<!ENTITY enigmail.confirmBeforeSendingAlways.tooltip       "Always display information dialog about signing/encryption before sending a message.">
+<!ENTITY enigmail.confirmBeforeSendingEncrypted.label    	 "Encrypted">
+<!ENTITY enigmail.confirmBeforeSendingEncrypted.tooltip    "Display information dialog before sending an ENCRYPTED message">
+<!ENTITY enigmail.confirmBeforeSendingUnencrypted.label    "Unencrypted">
+<!ENTITY enigmail.confirmBeforeSendingUnencrypted.tooltip  "Display information dialog before sending an UNENCRYPTED message">
+<!ENTITY enigmail.confirmBeforeSendingSigned.label         "Signed">
+<!ENTITY enigmail.confirmBeforeSendingSigned.tooltip       "Display information dialog before sending an SIGNED message">
+<!ENTITY enigmail.confirmBeforeSendingUnsigned.label       "Unsigned">
+<!ENTITY enigmail.confirmBeforeSendingUnsigned.tooltip     "Display information dialog before sending an UNSIGNED message">
+<!ENTITY enigmail.confirmBeforeSendingRules.label          "If rules changed the default">
+<!ENTITY enigmail.confirmBeforeSendingRules.tooltip        "Display information dialog before sending, if your preference was changed by a per-recipient rule">
 
 
 <!-- keySel Preferences -->

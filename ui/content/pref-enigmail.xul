@@ -76,14 +76,20 @@
     <tooltip id="confirmBeforeSendingAlways.tooltip">
       <description>&enigmail.confirmBeforeSendingAlways.tooltip;</description>
     </tooltip>
-    <tooltip id="confirmBeforeSendingIfEncrypted.tooltip">
-      <description>&enigmail.confirmBeforeSendingIfEncrypted.tooltip;</description>
+    <tooltip id="confirmBeforeSendingEncrypted.tooltip">
+      <description>&enigmail.confirmBeforeSendingEncrypted.tooltip;</description>
     </tooltip>
-    <tooltip id="confirmBeforeSendingIfNotEncrypted.tooltip">
-      <description>&enigmail.confirmBeforeSendingIfNotEncrypted.tooltip;</description>
+    <tooltip id="confirmBeforeSendingUnencrypted.tooltip">
+      <description>&enigmail.confirmBeforeSendingUnencrypted.tooltip;</description>
     </tooltip>
-    <tooltip id="confirmBeforeSendingIfRules.tooltip">
-      <description>&enigmail.confirmBeforeSendingIfRules.tooltip;</description>
+    <tooltip id="confirmBeforeSendingSigned.tooltip">
+      <description>&enigmail.confirmBeforeSendingSigned.tooltip;</description>
+    </tooltip>
+    <tooltip id="confirmBeforeSendingUnsigned.tooltip">
+      <description>&enigmail.confirmBeforeSendingUnsigned.tooltip;</description>
+    </tooltip>
+    <tooltip id="confirmBeforeSendingRules.tooltip">
+      <description>&enigmail.confirmBeforeSendingRules.tooltip;</description>
     </tooltip>
 
     <!-- keySel preferences -->
@@ -298,39 +304,55 @@
             </radiogroup>
           </groupbox>
 
-          <!-- options to confirm before sending -->
-          <groupbox>
+          <!-- options to confirm before sending: Basic -->
+          <groupbox id="enigmail_pref_confirm_before_sending">
             <caption label="&enigmail.confirmBeforeSendingOption.label;"/>
-            <radiogroup id="enigmail_confirmBeforeSending"
+
+            <radiogroup id="confirmBeforeSending"
+                        advanced="reverse"
                         pref="true"
                         preftype="int"
                         prefstring="extensions.enigmail.confirmBeforeSending">
 
               <radio id="confirmBeforeSendingNever"
-                    value="0"
+                    value="never"
                     label="&enigmail.confirmBeforeSendingNever.label;"
+                    oncommand="setAllConfirmBeforeSendingPrefs(false);"
                     tooltip="confirmBeforeSendingNever.tooltip"/>
 
               <radio id="confirmBeforeSendingAlways"
-                    value="1"
+                    value="always"
                     label="&enigmail.confirmBeforeSendingAlways.label;"
+                    oncommand="setAllConfirmBeforeSendingPrefs(true);"
                     tooltip="confirmBeforeSendingAlways.tooltip"/>
-
-              <radio id="confirmBeforeSendingIfEncrypted"
-                    value="2"
-                    label="&enigmail.confirmBeforeSendingIfEncrypted.label;"
-                    tooltip="confirmBeforeSendingIfEncrypted.tooltip"/>
-
-              <radio id="confirmBeforeSendingIfNotEncrypted"
-                    value="3"
-                    label="&enigmail.confirmBeforeSendingIfNotEncrypted.label;"
-                    tooltip="confirmBeforeSendingIfNotEncrypted.tooltip"/>
-
-              <radio id="confirmBeforeSendingIfRules"
-                    value="4"
-                    label="&enigmail.confirmBeforeSendingIfRules.label;"
-                    tooltip="confirmBeforeSendingIfRules.tooltip"/>
             </radiogroup>
+
+            <!-- options to confirm before sending: Advanced -->
+            <checkbox id="confirmBeforeSendingEncrypted"
+                      oncommand="updateBasicConfirmBeforeSendingPrefs();"
+                      advanced="true"
+                      label="&enigmail.confirmBeforeSendingEncrypted.label;"
+                      tooltip="confirmBeforeSendingEncrypted.tooltip" />
+            <checkbox id="confirmBeforeSendingUnencrypted"
+                      oncommand="updateBasicConfirmBeforeSendingPrefs();"
+                      label="&enigmail.confirmBeforeSendingUnencrypted.label;"
+                      advanced="true"
+                      tooltip="confirmBeforeSendingUnencrypted.tooltip" />
+            <checkbox id="confirmBeforeSendingSigned"
+                      oncommand="updateBasicConfirmBeforeSendingPrefs();"
+                      advanced="true"
+                      label="&enigmail.confirmBeforeSendingSigned.label;"
+                      tooltip="confirmBeforeSendingSigned.tooltip" />
+            <checkbox id="confirmBeforeSendingUnsigned"
+                      oncommand="updateBasicConfirmBeforeSendingPrefs();"
+                      advanced="true"
+                      label="&enigmail.confirmBeforeSendingUnsigned.label;"
+                      tooltip="confirmBeforeSendingUnsigned.tooltip" />
+            <checkbox id="confirmBeforeSendingRules"
+                      oncommand="updateBasicConfirmBeforeSendingPrefs();"
+                      advanced="true"
+                      label="&enigmail.confirmBeforeSendingRules.label;"
+                      tooltip="confirmBeforeSendingRules.tooltip" />
           </groupbox>
         </groupbox>
         <description>&enigmail.seeAccountSettings.label;</description>
