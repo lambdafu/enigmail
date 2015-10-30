@@ -87,6 +87,7 @@ function enigmailDlgOnLoad() {
           sign: node.getAttribute("sign"),
           encrypt: node.getAttribute("encrypt"),
           pgpMime: node.getAttribute("pgpMime"),
+          attachKey: node.getAttribute("attachKey"),
           negate: "0"
         };
         if (node.getAttribute("negateRule")) {
@@ -122,6 +123,7 @@ function enigmailDlgOnAccept() {
       node.getAttribute("sign"),
       node.getAttribute("encrypt"),
       node.getAttribute("pgpMime"),
+      node.getAttribute("attachKey"),
       node.getAttribute("negateRule")
     );
     node = node.nextSibling;
@@ -139,6 +141,7 @@ function createCol(value, label, treeItem, translate) {
     case "sign":
     case "encrypt":
     case "pgpMime":
+    case "attachKey":
       switch (Number(label)) {
         case 0:
           label = EnigGetString("never");
@@ -175,6 +178,7 @@ function createRow(treeItem, userObj) {
   var sign = createCol("sign", userObj.sign, treeItem);
   var encrypt = createCol("encrypt", userObj.encrypt, treeItem);
   var pgpMime = createCol("pgpMime", userObj.pgpMime, treeItem);
+  var attachKey = createCol("attachKey", userObj.attachKey, treeItem);
   var treeRow = document.createElement("treerow");
   treeRow.appendChild(negate);
   treeRow.appendChild(email);
@@ -182,6 +186,7 @@ function createRow(treeItem, userObj) {
   treeRow.appendChild(encrypt);
   treeRow.appendChild(sign);
   treeRow.appendChild(pgpMime);
+  treeRow.appendChild(attachKey);
   treeRow.setAttribute("rowId", ++gNumRows);
 
   if (treeItem.firstChild) {
@@ -207,6 +212,7 @@ function enigDoEdit() {
   if (node) {
     var inputObj = {};
     var resultObj = {};
+    var attachkey = Number.parseInt(node.getAttribute("attachKey"));
     inputObj.command = "edit";
     inputObj.options = "nosave";
     inputObj.toAddress = node.getAttribute("email");
@@ -214,6 +220,7 @@ function enigDoEdit() {
     inputObj.sign = Number(node.getAttribute("sign"));
     inputObj.encrypt = Number(node.getAttribute("encrypt"));
     inputObj.pgpmime = Number(node.getAttribute("pgpMime"));
+    inputObj.attachkey = (Number.isNaN(attachkey) ? 1 : attachkey);
     inputObj.negate = Number(node.getAttribute("negateRule"));
 
     window.openDialog("chrome://enigmail/content/enigmailSingleRcptSettings.xul", "", "dialog,modal,centerscreen,resizable", inputObj, resultObj);

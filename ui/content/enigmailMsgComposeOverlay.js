@@ -83,12 +83,13 @@ Enigmail.msg = {
   reasonEncrypted: "",
   reasonSigned: "",
 
-  // encrypt/sign/pgpmime according to rules?
+  // encrypt/sign/pgpmime/attachkey according to rules?
   // (1:ENIG_UNDEF(undef/maybe), 0:ENIG_NEVER(never/forceNo), 2:ENIG_ALWAYS(always/forceYes),
   //  22:ENIG_AUTO_ALWAYS, 99:ENIG_CONFLICT(conflict))
   encryptByRules: EnigmailConstants.ENIG_UNDEF,
   signByRules: EnigmailConstants.ENIG_UNDEF,
   pgpmimeByRules: EnigmailConstants.ENIG_UNDEF,
+  attachkeyByRules: EnigmailConstants.ENIG_UNDEF,
 
   // forced to encrypt/sign/pgpmime?
   // (1:ENIG_UNDEF(undef/maybe), 0:ENIG_NEVER(never/forceNo), 2:ENIG_ALWAYS(always/forceYes))
@@ -103,6 +104,7 @@ Enigmail.msg = {
   statusEncrypted: EnigmailConstants.ENIG_FINAL_UNDEF,
   statusSigned: EnigmailConstants.ENIG_FINAL_UNDEF,
   statusPGPMime: EnigmailConstants.ENIG_FINAL_UNDEF,
+  statusAttachOwnKey: EnigmailConstants.ENIG_FINAL_UNDEF,
   statusEncryptedInStatusBar: null, // last statusEncyrpted when processing status buttons
   // to find possible broken promise of encryption
 
@@ -111,7 +113,7 @@ Enigmail.msg = {
   statusSignedStr: "???",
   statusPGPMimeStr: "???",
   statusInlinePGPStr: "???",
-  statusAttachOwnKey: "???",
+  statusAttachOwnKeyStr: "???",
 
   sendProcess: false,
   nextCommandId: null,
@@ -613,6 +615,7 @@ Enigmail.msg = {
     this.encryptByRules = EnigmailConstants.ENIG_UNDEF;
     this.signByRules = EnigmailConstants.ENIG_UNDEF;
     this.pgpmimeByRules = EnigmailConstants.ENIG_UNDEF;
+    this.attachkeyByRules = EnigmailConstants.ENIG_UNDEF;
     this.signForced = EnigmailConstants.ENIG_UNDEF;
     this.encryptForced = EnigmailConstants.ENIG_UNDEF;
     this.pgpmimeForced = EnigmailConstants.ENIG_UNDEF;
@@ -1288,11 +1291,11 @@ Enigmail.msg = {
   },
 
 
-  // key function to process the final encrypt/sign/pgpmime state from all settings
+  // key function to process the final encrypt/sign/pgpmime/attachkey state from all settings
   // sendFlags: contains the sendFlags if the message is really processed. Optional, can be null
   // - uses as INPUT:
   //   - this.sendMode
-  //   - this.encryptByRules, this.signByRules, pgpmimeByRules
+  //   - this.encryptByRules, this.signByRules, this.pgpmimeByRules, this.attachkeyByRules
   //   - this.encryptForced, this.encryptSigned
   // - uses as OUTPUT:
   //   - this.statusEncrypt, this.statusSign, this.statusPGPMime
@@ -1308,6 +1311,7 @@ Enigmail.msg = {
     var signFinally = null;
     var signReason = "";
     var pgpmimeFinally = null;
+    var attachkeyFinally = null;
 
     // process resulting encrypt mode
     if (this.encryptForced == EnigmailConstants.ENIG_NEVER) { // force not to encrypt?
@@ -1387,6 +1391,31 @@ Enigmail.msg = {
     EnigmailLog.DEBUG("enigmailMsgComposeOverlay.js:   signed=" + ((this.sendMode & SIGN) !== 0) + " signByRules=" + this.signByRules + " signFinally=" + signFinally + "\n");
     EnigmailLog.DEBUG("                                signReason=" + signReason + "\n");
 
+    // process resulting public key attachment decision
+    switch (this.attachkeyByRules) {
+      case EnigmailConstants.ENIG_NEVER:
+        EnigmailLog.DEBUG("NEVER\n");
+        attachkeyFinally = EnigmailConstants.ENIG_FINAL_NO;
+        break;
+      case EnigmailConstants.ENIG_UNDEF:
+        EnigmailLog.DEBUG("UNDEF\n");
+        if (this.getAccDefault("attachPgpKey")) {
+          attachkeyFinally = EnigmailConstants.ENIG_FINAL_YES;
+        }
+        else {
+          attachkeyFinally = EnigmailConstants.ENIG_FINAL_NO;
+        }
+        break;
+      case EnigmailConstants.ENIG_ALWAYS:
+        EnigmailLog.DEBUG("ALWAYS\n");
+        attachkeyFinally = EnigmailConstants.ENIG_FINAL_YES;
+        break;
+      case EnigmailConstants.ENIG_CONFLICT:
+        EnigmailLog.DEBUG("CONFLICT\n");
+        attachkeyFinally = EnigmailConstants.ENIG_FINAL_CONFLICT;
+        break;
+    }
+
     // process option to finally sign if encrypted/unencrypted
     // (unless rules force not to sign)
     //var derivedFromEncMode = false;
@@ -1464,6 +1493,7 @@ Enigmail.msg = {
     this.statusEncrypted = encFinally;
     this.statusSigned = signFinally;
     this.statusPGPMime = pgpmimeFinally;
+    this.statusAttachOwnKey = attachkeyFinally;
     this.reasonEncrypted = encReason;
     this.reasonSigned = signReason;
   },
@@ -1760,6 +1790,7 @@ Enigmail.msg = {
       this.encryptByRules = EnigmailConstants.ENIG_UNDEF;
       this.signByRules = EnigmailConstants.ENIG_UNDEF;
       this.pgpmimeByRules = EnigmailConstants.ENIG_UNDEF;
+      this.attachkeyByRules = EnigmailConstants.ENIG_UNDEF;
 
       // process rules
       if (toAddrList.length > 0 && EnigmailPrefs.getPref("assignKeysByRules")) {
@@ -1773,6 +1804,7 @@ Enigmail.msg = {
           this.encryptByRules = flagsObj.encrypt;
           this.signByRules = flagsObj.sign;
           this.pgpmimeByRules = flagsObj.pgpMime;
+          this.attachkeyByRules = flagsObj.attachKey;
 
           if (matchedKeysObj.value && matchedKeysObj.value.length > 0) {
             // replace addresses with results from rules
@@ -2280,6 +2312,7 @@ Enigmail.msg = {
     this.encryptByRules = flagsObj.encrypt;
     this.signByRules = flagsObj.sign;
     this.pgpmimeByRules = flagsObj.pgpMime;
+    this.attachkeyByRules = flagsObj.attachKey;
 
     // if not clear whether to encrypt yet, check whether automatically-send-encrypted applies
     // - check whether bcc is empty here? if (bccAddrStr.length === 0)
@@ -2298,6 +2331,10 @@ Enigmail.msg = {
     // - pgpMime conflicts always result into pgpMime = 0/'never'
     if (this.statusPGPMime == EnigmailConstants.ENIG_FINAL_CONFLICT) {
       this.statusPGPMime = EnigmailConstants.ENIG_FINAL_NO;
+    }
+    // - attachOwnKey conflicts always result into attachKey = 0/'never'
+    if (this.statusAttachOwnKey == EnigmailConstants.ENIG_FINAL_CONFLICT) {
+      this.statusAttachOwnKey = EnigmailConstants.ENIG_FINAL_NO;
     }
     // - encrypt/sign conflicts result into result 0/'never'
     //   with possible dialog to give a corresponding feedback
@@ -2347,6 +2384,17 @@ Enigmail.msg = {
       case EnigmailConstants.ENIG_FINAL_YES:
       case EnigmailConstants.ENIG_FINAL_FORCEYES:
         sendFlags |= nsIEnigmail.SEND_PGP_MIME;
+        break;
+    }
+
+    switch (this.statusAttachOwnKey) {
+      case EnigmailConstants.ENIG_FINAL_NO:
+      case EnigmailConstants.ENIG_FINAL_FORCENO:
+        sendFlags &= ~nsIEnigmail.SEND_ATTACHMENT;
+        break;
+      case EnigmailConstants.ENIG_FINAL_YES:
+      case EnigmailConstants.ENIG_FINAL_FORCEYES:
+        sendFlags |= nsIEnigmail.SEND_ATTACHMENT;
         break;
     }
 
@@ -3045,7 +3093,10 @@ Enigmail.msg = {
         return true;
       }
 
-      if (this.attachOwnKeyObj.appendAttachment) this.attachOwnKey();
+      if (this.attachOwnKeyObj.appendAttachment ||
+          (sendFlags & nsIEnigmail.SEND_ATTACHMENT) !== 0) {
+        this.attachOwnKey();
+      }
 
       var bucketList = document.getElementById("attachmentBucket");
       var hasAttachments = ((bucketList && bucketList.hasChildNodes()) || gMsgCompose.compFields.attachVCard);

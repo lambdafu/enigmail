@@ -146,7 +146,7 @@ var EnigmailRules = {
     return false;
   },
 
-  addRule: function(appendToEnd, toAddress, keyList, sign, encrypt, pgpMime, flags) {
+  addRule: function(appendToEnd, toAddress, keyList, sign, encrypt, pgpMime, attachKey, flags) {
     EnigmailLog.DEBUG("rules.jsm: addRule()\n");
     if (!rulesListHolder.rulesList) {
       var domParser = Cc[NS_DOMPARSER_CONTRACTID].createInstance(Ci.nsIDOMParser);
@@ -159,6 +159,7 @@ var EnigmailRules = {
     rule.setAttribute("sign", sign);
     rule.setAttribute("encrypt", encrypt);
     rule.setAttribute("pgpMime", pgpMime);
+    rule.setAttribute("attachKey", attachKey);
     rule.setAttribute("negateRule", flags);
     var origFirstChild = rulesListHolder.rulesList.firstChild.firstChild;
 
@@ -205,7 +206,7 @@ var EnigmailRules = {
   },
 
   /**
-   * process resulting sign/encryp/pgpMime mode for passed string of email addresses and
+   * process resulting sign/encryp/pgpMime/attachKey mode for passed string of email addresses and
    * use rules and interactive rule dialog to replace emailAddrsStr by known keys
    * Input parameters:
    *  @emailAddrsStr:             comma and space separated string of addresses to process
@@ -215,7 +216,7 @@ var EnigmailRules = {
    *  @matchedKeysObj.addrKeysList: all email/keys mappings (array of objects with addr as string and keys as comma separated string)
    *                                (does NOT contain emails for which no key was found)
    *  @matchedKeysObj.addrNoKeyList: list of emails that don't have a key according to rules
-   *  @flagsObj:       return value for combined sign/encrype/pgpMime mode
+   *  @flagsObj:       return value for combined sign/encrype/pgpMime/attachKey mode
    *                   values might be: 0='never', 1='maybe', 2='always', 3='conflict'
    *
    * @return:  false if error occurred or processing was canceled
@@ -238,6 +239,7 @@ var EnigmailRules = {
     flags.sign = EnigmailConstants.ENIG_UNDEF; // default sign flag is: maybe
     flags.encrypt = EnigmailConstants.ENIG_UNDEF; // default encrypt flag is: maybe
     flags.pgpMime = EnigmailConstants.ENIG_UNDEF; // default pgpMime flag is: maybe
+    flags.attachKey = EnigmailConstants.ENIG_UNDEF; // default attachKey flag is: maybe
 
     // create openList: list of addresses not processed by rules yet
     // - each entry has
@@ -298,6 +300,7 @@ var EnigmailRules = {
               rule.sign = node.getAttribute("sign");
               rule.encrypt = node.getAttribute("encrypt");
               rule.pgpMime = node.getAttribute("pgpMime");
+              rule.attachKey = node.getAttribute("attachKey");
               this.mapRuleToKeys(rule,
                 openList, flags, addrKeysList, addrNoKeyList);
             }
@@ -377,6 +380,7 @@ var EnigmailRules = {
     flagsObj.sign = flags.sign;
     flagsObj.encrypt = flags.encrypt;
     flagsObj.pgpMime = flags.pgpMime;
+    flagsObj.attachKey = flags.attachKey;
     flagsObj.value = true;
 
     EnigmailLog.DEBUG("   found keys:\n");
@@ -427,9 +431,10 @@ var EnigmailRules = {
           //          => then we only process the flags
 
           // process sign/encrypt/ppgMime settings
-          flags.sign = this.combineFlagValues(flags.sign, Number(rule.sign));
-          flags.encrypt = this.combineFlagValues(flags.encrypt, Number(rule.encrypt));
-          flags.pgpMime = this.combineFlagValues(flags.pgpMime, Number(rule.pgpMime));
+          flags.sign      = this.combineFlagValues(flags.sign,      Number(rule.sign));
+          flags.encrypt   = this.combineFlagValues(flags.encrypt,   Number(rule.encrypt));
+          flags.pgpMime   = this.combineFlagValues(flags.pgpMime,   Number(rule.pgpMime));
+          flags.attachKey = this.combineFlagValues(flags.attachKey, Number(rule.attachKey));
 
           if (rule.keyId) {
             // move found address from openAdresses to corresponding list (with keys added)
@@ -452,7 +457,7 @@ var EnigmailRules = {
   },
 
   /**
-   *  check for the attribute of type "sign"/"encrypt"/"pgpMime" of the passed node
+   *  check for the attribute of type "sign"/"encrypt"/"pgpMime"/"attachKey" of the passed node
    *  and combine its value with oldVal and check for conflicts
    *    values might be: 0='never', 1='maybe', 2='always', 3='conflict'
    *  @oldVal:      original input value

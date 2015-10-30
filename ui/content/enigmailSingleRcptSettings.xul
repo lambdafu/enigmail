@@ -172,6 +172,20 @@
               </menulist>
             </hbox>
           </row>
+          <row>
+            <hbox align="center">
+              <label value="&enigmail.attachKey.label;" control="attachkey"/>
+            </hbox>
+            <hbox>
+              <menulist id="attachkey">
+                <menupopup>
+                  <menuitem value="0" label="&enigmail.never.label;"/>
+                  <menuitem value="1" label="&enigmail.maybe.label;"/>
+                  <menuitem value="2" label="&enigmail.always.label;"/>
+                </menupopup>
+              </menulist>
+            </hbox>
+          </row>
         </rows>
       </grid>
       <description>&enigmail.singleRcptSettings.desc;

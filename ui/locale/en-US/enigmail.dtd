@@ -61,6 +61,7 @@
 <!ENTITY enigmail.sending.label          "Sending">
 <!ENTITY enigmail.keySel.label           "Key Selection">
 <!ENTITY enigmail.pgpMime.label          "PGP/MIME">
+<!ENTITY enigmail.attachKey.label        "Attach Public Key">
 <!ENTITY enigmail.advanced.label         "Advanced">
 <!ENTITY enigmail.debug.label            "Debugging">
 

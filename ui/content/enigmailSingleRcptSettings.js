@@ -122,6 +122,13 @@ function enigmailDlgOnLoad() {
   else {
     document.getElementById("pgpmime").selectedIndex = 1;
   }
+  if (typeof(window.arguments[INPUT].attachkey) == "number") {
+    document.getElementById("attachkey").selectedIndex = window.arguments[INPUT].attachkey;
+  }
+  else {
+    document.getElementById("attachkey").selectedIndex = 1;
+  }
+
 }
 
 function enigmailDlgOnAccept() {
@@ -179,6 +186,7 @@ function enigmailDlgOnAccept() {
   window.arguments[RESULT].sign = document.getElementById("sign").value;
   window.arguments[RESULT].encrypt = document.getElementById("encrypt").value;
   window.arguments[RESULT].pgpMime = document.getElementById("pgpmime").value;
+  window.arguments[RESULT].attachKey = document.getElementById("attachkey").value;
   window.arguments[RESULT].negate = 0; /*Number(document.getElementById("negateRule").value);*/
 
   var actionType = document.getElementById("actionType");
@@ -205,6 +213,7 @@ function enigmailDlgOnAccept() {
       window.arguments[RESULT].sign,
       window.arguments[RESULT].encrypt,
       window.arguments[RESULT].pgpMime,
+      window.arguments[RESULT].attachKey,
       window.arguments[RESULT].negate);
     enigmailSvc.saveRulesFile();
   }
