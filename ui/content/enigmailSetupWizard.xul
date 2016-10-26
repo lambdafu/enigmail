@@ -380,6 +380,18 @@
 
   </wizardpage>
 
+  <!-- Optional Key Upload Page -->
+  <wizardpage id="pgUpload" pageid="pgUpload"
+              onpageshow="wizardUpload()"
+              next="pgComplete"
+              label="&enigmail.setupWiz.pgUpload.title;"
+              description="&enigmail.setupWiz.pgUpload.subtitle;">
+    <groupbox id="keygenConsoleBox" orient="vertical" flex="1">
+
+      <description>&enigmail.keyUpload.desc;</description>
+    </groupbox>
+
+  </wizardpage>
 
   <wizardpage id="pgImportSettings" pageid="pgImportSettings"
               next="pgComplete"

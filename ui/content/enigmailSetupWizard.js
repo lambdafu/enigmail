@@ -157,6 +157,7 @@ function onNext() {
         break;
       case "pgKeySel":
         setNextPage(onAfterPgKeySel());
+        setNextPage("pgUpload");
         break;
       case "pgNoKeyFound":
         setNextPage(onAfterPgNoKeyFound());
