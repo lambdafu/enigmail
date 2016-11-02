@@ -26,6 +26,8 @@ Components.utils.import("resource://enigmail/configBackup.jsm"); /*global Enigma
 Components.utils.import("resource://enigmail/keyRing.jsm"); /*global EnigmailKeyRing: false */
 Components.utils.import("resource://enigmail/installGnuPG.jsm"); /*global InstallGnuPG: false */
 Components.utils.import("resource://enigmail/passwordCheck.jsm"); /*global EnigmailPasswordCheck: false */
+Components.utils.import("resource://enigmail/execution.jsm"); /*global EnigmailExecution: false */
+Components.utils.import("resource://enigmail/gpgAgent.jsm"); /*global EnigmailGpgAgent: false */
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -46,6 +48,7 @@ var gCreateNewKey = false;
 var gDownoadObj = null;
 var gPassPhraseQuality = null;
 var gPageStack = []; // required for correct stepping back
+var gWksClientNonce = null;
 
 function onLoad() {
   gEnigAccountMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
@@ -157,6 +160,7 @@ function onNext() {
         break;
       case "pgKeySel":
         setNextPage(onAfterPgKeySel());
+        setNextPage("pgUpload");
         break;
       case "pgNoKeyFound":
         setNextPage(onAfterPgNoKeyFound());
@@ -1113,6 +1117,8 @@ function applyWizardSettings() {
 
   EnigSetPref("configuredVersion", EnigGetVersion());
   EnigmailPrefs.savePrefs();
+
+	keyUploadDo();
 }
 
 function applyMozSetting(preference, newVal) {
@@ -1375,4 +1381,69 @@ function doImportSettings() {
 function displayUnmatchedIds(emailArr) {
   EnigAlert("The following identities of your old setup could not be matched:\n- " + emailArr.join("\n- ") +
     "\nThe settings for these identities were skipped.");
+}
+
+function wizardUpload() {
+	disableNext(true);
+	keyUploadCheckAvailability()
+}
+
+function keyUploadCheckAvailability() {
+ 	var uidSel = document.getElementById("uidSelection");
+	var emailCol = uidSel.columns.getFirstColumn();
+	var uid = uidSel.view.getCellText(uidSel.currentIndex,emailCol).toString();
+	var thisNonce = Math.random() * 1000;
+	var wksListener = EnigmailExecution.newSimpleListener(null,function(ret) {
+		if (gWksClientNonce === thisNonce) {
+			document.getElementById("keyUploadWksDeck").selectedIndex = 1;
+			if (ret === 0) {
+				document.getElementById("keyUploadWks").removeAttribute("disabled");
+				EnigmailLog.DEBUG("wks supported for " + uid + "\n");
+			} else {
+				document.getElementById("keyUploadWks").setAttribute("checked", "false");
+				document.getElementById("keyUploadWks").setAttribute("disabled", "true");
+				EnigmailLog.DEBUG("wks NOT supported for " + uid + "\n");
+			}
+			disableNext(false);
+		}
+	});
+	var confListener;
+
+	confListener = EnigmailExecution.newSimpleListener(null,function(ret) {
+		if (ret === 0) {
+			try {
+				var proc = EnigmailExecution.execStart(confListener.stdoutData.trim() + "/gpg-wks-client",["--supported",uid],false,window,wksListener,{value:null});
+				if (proc === null) {
+					document.getElementById("keyUploadWksDeck").selectedIndex = 1;
+					document.getElementById("keyUploadWks").setAttribute("disabled", "true");
+					document.getElementById("keyUploadWks").setAttribute("checked", "false");
+					disableNext(false);
+				}
+			} catch (e) {
+				document.getElementById("keyUploadWksDeck").selectedIndex = 1;
+				document.getElementById("keyUploadWks").setAttribute("disabled", "true");
+				document.getElementById("keyUploadWks").setAttribute("checked", "false");
+				disableNext(false);
+			}
+		} else {
+			document.getElementById("keyUploadWksDeck").selectedIndex = 1;
+			document.getElementById("keyUploadWks").setAttribute("disabled", "true");
+			document.getElementById("keyUploadWks").setAttribute("checked", "false");
+			disableNext(false);
+		}
+	});
+
+	gWksClientNonce = thisNonce;
+	document.getElementById("keyUploadWksDeck").selectedIndex = 0;
+	EnigmailExecution.execStart(EnigmailGpgAgent.gpgconfPath,["--list-dirs","libexecdir"],false,window,confListener,{value:null});
+}
+
+function keyUploadDo() {
+	if (document.getElementById("keyUploadWks").getAttribute("checked") == "true") {
+		alert("Upload to WKS");
+	}
+
+	if (document.getElementById("keyUploadSks").getAttribute("checked") == "true") {
+		alert("Upload to SKS");
+	}
 }

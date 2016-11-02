@@ -380,6 +380,30 @@
 
   </wizardpage>
 
+  <!-- Optional Key Upload Page -->
+  <wizardpage id="pgUpload" pageid="pgUpload"
+              onpageshow="wizardUpload()"
+              next="pgComplete"
+              label="&enigmail.setupWiz.pgUpload.title;"
+              description="&enigmail.setupWiz.pgUpload.subtitle;">
+    <groupbox id="keygenConsoleBox" orient="vertical" flex="1">
+			<vbox>
+				<description>&enigmail.keyUpload.desc;</description>
+				<separator/>
+				<checkbox label="Upload the the global OpenPGP keyservers" checked="true" id="keyUploadSks"/>
+				<spacer width="5px"/>
+				<deck id="keyUploadWksDeck">
+					<hbox align="center">
+						<label value="Checking whenever your email provider is supported"/>
+						<spacer width="5px"/>
+						<progressmeter mode="undetermined"/>
+					</hbox>
+					<checkbox label="Upload to the keyserver of your mail provider" checked="true" id="keyUploadWks"/>
+				</deck>
+			</vbox>
+		</groupbox>
+
+  </wizardpage>
 
   <wizardpage id="pgImportSettings" pageid="pgImportSettings"
               next="pgComplete"
