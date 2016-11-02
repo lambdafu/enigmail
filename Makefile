@@ -10,7 +10,7 @@ DEPTH		= .
 include $(DEPTH)/config/autoconf.mk
 
 DIRS = ipc public
-DIRS += ui package lang
+DIRS += ui package lang stdlib
 
 ALL = dirs xpi
 
@@ -39,6 +39,7 @@ eslint:
 	static_analysis/eslint ipc
 	static_analysis/eslint package
 	static_analysis/eslint ui
+	static_analysis/eslint stdlib
 
 unit:
 	make -C ipc/tests
