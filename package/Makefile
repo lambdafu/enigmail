@@ -78,6 +78,10 @@ MODFILES = \
            rng.jsm \
            rules.jsm \
            socks5Proxy.jsm \
+           stdlibCompose.jsm \
+           stdlibMisc.jsm \
+           stdlibMsgHdrUtils.jsm \
+           stdlibSend.jsm \
            streams.jsm \
            system.jsm \
            time.jsm \
@@ -87,6 +91,7 @@ MODFILES = \
            uris.jsm \
            verify.jsm \
            versioning.jsm \
+           webKey.jsm \
            windows.jsm \
            zbase32.jsm
 

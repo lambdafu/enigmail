@@ -58,6 +58,8 @@ Components.utils.import("resource://enigmail/pEpAdapter.jsm"); /*global Enigmail
 Components.utils.import("resource://enigmail/pEpDecrypt.jsm"); /*global EnigmailPEPDecrypt: false */
 Components.utils.import("resource://enigmail/autocrypt.jsm"); /*global EnigmailAutocrypt: false */
 Components.utils.import("resource://enigmail/mime.jsm"); /*global EnigmailMime: false */
+Components.utils.import("resource://enigmail/webKey.jsm"); /*global EnigmailWks: false */
+Components.utils.import("resource://enigmail/stdlibMisc.jsm"); /*global getIdentityForEmail: false */
 
 if (!Enigmail) var Enigmail = {};
 
@@ -2587,6 +2589,30 @@ Enigmail.msg = {
         EnigmailAutocrypt.processAutocryptHeader(currentHeaderData.from.headerValue, [hdrData],
           currentHeaderData.date.headerValue);
       }
+    }
+  },
+
+  confirmWksRequest: function() {
+    EnigmailLog.DEBUG("enigmailMessengerOverlay.js: confirmWksRequest\n");
+    try {
+      var msg = gFolderDisplay.selectedMessage;
+      if (!(!msg || !msg.folder)) {
+        var accMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+        var msgHdr = msg.folder.GetMessageHeader(msg.messageKey);
+        let email = EnigmailFuncs.stripEmail(msgHdr.recipients);
+        let maybeIdent = getIdentityForEmail(email);
+
+        if ( maybeIdent.identity ) {
+          msgHdrsModifyRaw([msgHdr], function(data) {
+            EnigmailWks.confirmKey(maybeIdent.identity,data,window);
+            return null;
+          });
+        } else {
+          EnigmailDialog.alert(window,EnigmailLocale.getString("wksNoIdentity",[email]));
+        }
+      }
+    } catch (e) {
+      EnigmailLog.DEBUG(e + "\n");
     }
   }
 };
