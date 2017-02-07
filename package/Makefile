@@ -78,10 +78,7 @@ MODFILES = \
            rng.jsm \
            rules.jsm \
            socks5Proxy.jsm \
-           stdlibCompose.jsm \
-           stdlibMisc.jsm \
-           stdlibMsgHdrUtils.jsm \
-           stdlibSend.jsm \
+					 stdlib.jsm \
            streams.jsm \
            system.jsm \
            time.jsm \
@@ -95,15 +92,23 @@ MODFILES = \
            windows.jsm \
            zbase32.jsm
 
+STDLIB_MODFILES = \
+                  stdlib/compose.jsm \
+                  stdlib/misc.jsm \
+                  stdlib/msgHdrUtils.jsm \
+                  stdlib/send.jsm
+
 all: deploy
 
 deploy: $(PREFFILES) $(COMPFILES) $(MODFILES)
 	$(DEPTH)/util/install -m 644 $(DIST)/components $(COMPFILES)
 	$(DEPTH)/util/install -m 644 $(DIST)/defaults/preferences $(PREFFILES)
 	$(DEPTH)/util/install -m 644 $(DIST)/modules $(MODFILES)
+	$(DEPTH)/util/install -m 644 $(DIST)/modules/stdlib $(STDLIB_MODFILES)
 
 
 clean:
 	$(DEPTH)/util/install -u $(DIST)/components $(COMPFILES)
 	$(DEPTH)/util/install -u $(DIST)/defaults/preferences $(PREFFILES)
 	$(DEPTH)/util/install -u $(DIST)/modules $(MODFILES)
+	$(DEPTH)/util/install -u $(DIST)/modules/stdlib $(STDLIB_MODFILES)

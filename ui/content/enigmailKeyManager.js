@@ -30,7 +30,7 @@ const Cu = Components.utils;
 Cu.import("resource://enigmail/streams.jsm"); /*global EnigmailStreams: false */
 Cu.import("resource://enigmail/clipboard.jsm"); /*global EnigmailClipboard: false */
 Cu.import("resource://enigmail/funcs.jsm"); /*global EnigmailFuncs: false */
-Cu.import("resource://enigmail/stdlibMisc.jsm"); /*global getIdentityForEmail: false */
+Cu.import("resource://enigmail/stdlib.jsm"); /*global EnigmailStdlib: false */
 
 
 const INPUT = 0;
@@ -1211,7 +1211,7 @@ function enigmailKeyServerAccess(accessType, callbackFunc) {
 
       for ( let uid of key.userIds ) {
         let email = EnigmailFuncs.stripEmail(uid.userId);
-        let maybeIdent = getIdentityForEmail(email);
+        let maybeIdent = EnigmailStdlib.getIdentityForEmail(email);
 
         if ( maybeIdent && maybeIdent.identity ) {
           keyDlObj.senderIdent = maybeIdent.identity;

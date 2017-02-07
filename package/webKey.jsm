@@ -26,7 +26,7 @@ Cu.import("resource://enigmail/log.jsm"); /*global EnigmailLog: false */
 Cu.import("resource://enigmail/core.jsm"); /*global EnigmailCore: false */
 Cu.import("resource://enigmail/execution.jsm"); /*global EnigmailExecution: false */
 Cu.import("resource://enigmail/gpgAgent.jsm"); /*global EnigmailGpgAgent: false */
-Cu.import("resource://enigmail/stdlibSend.jsm"); /*global sendMessage: false */
+Cu.import("resource://enigmail/stdlib.jsm"); /*global EnigmailStdlib: false */
 
 var EnigmailWks = {
   wksClientPath: null,
@@ -84,7 +84,7 @@ var EnigmailWks = {
       if(wks_client === null) {
         cb(false);
       }
-      let listener = EnigmailExecution.newSimpleListener(null,function(ret) { cb(ret === 0) });
+      let listener = EnigmailExecution.newSimpleListener(null,function(ret) { cb(ret === 0); });
       let proc = EnigmailExecution.execStart(wks_client,["--supported",email],false,window,listener,{value:null});
       if (proc === null) {
         cb(false);
@@ -107,7 +107,7 @@ var EnigmailWks = {
         if(subject !== null && to !== null) {
           si.sendFlags |= (Ci.nsIEnigmail.SEND_VERBATIM);
 
-          sendMessage({
+          EnigmailStdlib.sendMessage({
             urls: [],
             identity: ident,
             to: to[1],
@@ -118,11 +118,11 @@ var EnigmailWks = {
             deliveryType: Ci.nsIMsgCompDeliverMode.Now
           }, {
             match: function(x) {
-              x.plainText(listener.stdoutData)
+              x.plainText(listener.stdoutData);
             }
           }, {}, {});
 
-          if(cb != null) {
+          if(cb !== null) {
             cb();
           }
         }
@@ -132,25 +132,21 @@ var EnigmailWks = {
   },
 
   confirmKey: function(ident,body,window) {
-    var body = body.replace(/\r?\n/,"\r\n");
+    var sanitized = body.replace(/\r?\n/,"\r\n");
     EnigmailLog.DEBUG("webKey.jsm: confirmKey: ident=" + ident.email + "\n");
     return EnigmailWks.getWksClientPathAsync(window,function(wks_client) {
       if(wks_client === null) {
-        cb(false);
+        return;
       }
       let listener = EnigmailExecution.newSimpleListener(function(pipe) {
       try {
-        EnigmailLog.DEBUG(body + "\n");
-        EnigmailLog.DEBUG(encodeURI(body) + "\n");
-        pipe.write(body);
-        pipe.close();
+          pipe.write(sanitized);
+          pipe.close();
         } catch(e) {
-        EnigmailLog.DEBUG(e + "\n");
+          EnigmailLog.DEBUG(e + "\n");
         }
       },function(ret) {
         try {
-          EnigmailLog.DEBUG("stdout " + listener.stdoutData + "\n");
-          EnigmailLog.DEBUG("stderr " + listener.stderrData + "\n");
           let si = Components.classes["@mozdev.org/enigmail/composefields;1"].createInstance(Components.interfaces.nsIEnigMsgCompFields);
           let subject = listener.stdoutData.match(/^Subject:[ \t]*(.+)$/im);
           let to = listener.stdoutData.match(/^To:[ \t]*(.+)$/im);
@@ -158,7 +154,7 @@ var EnigmailWks = {
           if(subject !== null && to !== null) {
             si.sendFlags |= (Ci.nsIEnigmail.SEND_VERBATIM);
 
-            sendMessage({
+            EnigmailStdlib.sendMessage({
               urls: [],
               identity: ident,
               to: to[1],
@@ -169,7 +165,7 @@ var EnigmailWks = {
               deliveryType: Ci.nsIMsgCompDeliverMode.Now
             }, {
               match: function(x) {
-                x.plainText(listener.stdoutData)
+                x.plainText(listener.stdoutData);
               }
             }, {}, {});
           }
@@ -179,7 +175,5 @@ var EnigmailWks = {
       });
       EnigmailExecution.execStart(wks_client,["--receive"],false,window,listener,{value:null});
     });
-
-    return;
   }
 };

@@ -56,8 +56,8 @@ Cu.import("resource://gre/modules/NetUtil.jsm");
 Cu.import("resource:///modules/gloda/mimemsg.js");
 Cu.import("resource:///modules/mailServices.js");
 
-Cu.import("resource://enigmail/stdlibMisc.jsm");
-Cu.import("resource://enigmail/stdlibMsgHdrUtils.jsm");
+Cu.import("resource://enigmail/stdlib/misc.jsm");
+Cu.import("resource://enigmail/stdlib/msgHdrUtils.jsm");
 Cu.import("resource://enigmail/log.jsm");
 
 /**

@@ -59,7 +59,7 @@ Components.utils.import("resource://enigmail/pEpDecrypt.jsm"); /*global Enigmail
 Components.utils.import("resource://enigmail/autocrypt.jsm"); /*global EnigmailAutocrypt: false */
 Components.utils.import("resource://enigmail/mime.jsm"); /*global EnigmailMime: false */
 Components.utils.import("resource://enigmail/webKey.jsm"); /*global EnigmailWks: false */
-Components.utils.import("resource://enigmail/stdlibMisc.jsm"); /*global getIdentityForEmail: false */
+Components.utils.import("resource://enigmail/stdlib.jsm"); /*global EnigmailStdlib: false */
 
 if (!Enigmail) var Enigmail = {};
 
@@ -2600,7 +2600,7 @@ Enigmail.msg = {
         var accMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
         var msgHdr = msg.folder.GetMessageHeader(msg.messageKey);
         let email = EnigmailFuncs.stripEmail(msgHdr.recipients);
-        let maybeIdent = getIdentityForEmail(email);
+        let maybeIdent = EnigmailStdlib.getIdentityForEmail(email);
 
         if ( maybeIdent.identity ) {
           msgHdrsModifyRaw([msgHdr], function(data) {

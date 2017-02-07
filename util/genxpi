@@ -126,10 +126,11 @@ zip --must-match\
     modules/rng.jsm \
     modules/rules.jsm \
     modules/socks5Proxy.jsm \
-    modules/stdlibSend.jsm \
-    modules/stdlibCompose.jsm \
-    modules/stdlibMisc.jsm \
-    modules/stdlibMsgHdrUtils.jsm \
+    modules/stdlib/send.jsm \
+    modules/stdlib/compose.jsm \
+    modules/stdlib/misc.jsm \
+    modules/stdlib/msgHdrUtils.jsm \
+    modules/stdlib.jsm \
     modules/streams.jsm \
     modules/subprocess.jsm \
     modules/subprocess_worker_unix.js \

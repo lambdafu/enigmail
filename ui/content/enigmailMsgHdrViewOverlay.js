@@ -31,7 +31,7 @@ Components.utils.import("resource://enigmail/constants.jsm"); /*global EnigmailC
 Components.utils.import("resource://enigmail/data.jsm"); /*global EnigmailData: false */
 Components.utils.import("resource://enigmail/clipboard.jsm"); /*global EnigmailClipboard: false */
 Components.utils.import("resource://enigmail/pEpAdapter.jsm"); /*global EnigmailPEPAdapter: false */
-Components.utils.import("resource://enigmail/stdlibMsgHdrUtils.jsm");
+Components.utils.import("resource://enigmail/stdlib.jsm"); /* global EnigmailStdlib: false */
 
 if (!Enigmail) var Enigmail = {};
 
@@ -367,7 +367,7 @@ Enigmail.hdrView = {
           var msg = gFolderDisplay.selectedMessage;
           if (!(!msg || !msg.folder)) {
             var msgHdr = msg.folder.GetMessageHeader(msg.messageKey);
-            msgHdrGetHeaders(msgHdr,function(k) {
+            EnigmailStdlib.msgHdrGetHeaders(msgHdr,function(k) {
               let phase = k.get("wks-phase");
 
               if (phase === "confirm") {
