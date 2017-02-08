@@ -131,11 +131,12 @@ var EnigmailWks = {
     });
   },
 
-  confirmKey: function(ident,body,window) {
+  confirmKey: function(ident,body,window,cb) {
     var sanitized = body.replace(/\r?\n/,"\r\n");
     EnigmailLog.DEBUG("webKey.jsm: confirmKey: ident=" + ident.email + "\n");
     return EnigmailWks.getWksClientPathAsync(window,function(wks_client) {
       if(wks_client === null) {
+        if(cb) { cb(false); }
         return;
       }
       let listener = EnigmailExecution.newSimpleListener(function(pipe) {
@@ -143,6 +144,7 @@ var EnigmailWks = {
           pipe.write(sanitized);
           pipe.close();
         } catch(e) {
+          if(cb) { cb(false); }
           EnigmailLog.DEBUG(e + "\n");
         }
       },function(ret) {
@@ -168,8 +170,11 @@ var EnigmailWks = {
                 x.plainText(listener.stdoutData);
               }
             }, {}, {});
+
+            if(cb) { cb(true); }
           }
         } catch(e) {
+          if(cb) { cb(false); }
           EnigmailLog.DEBUG(e + "\n");
         }
       });

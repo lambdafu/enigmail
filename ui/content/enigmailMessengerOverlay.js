@@ -2597,14 +2597,21 @@ Enigmail.msg = {
     try {
       var msg = gFolderDisplay.selectedMessage;
       if (!(!msg || !msg.folder)) {
-        var accMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+        var accMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].
+          getService(Components.interfaces.nsIMsgAccountManager);
         var msgHdr = msg.folder.GetMessageHeader(msg.messageKey);
         let email = EnigmailFuncs.stripEmail(msgHdr.recipients);
         let maybeIdent = EnigmailStdlib.getIdentityForEmail(email);
 
         if ( maybeIdent.identity ) {
-          msgHdrsModifyRaw([msgHdr], function(data) {
-            EnigmailWks.confirmKey(maybeIdent.identity,data,window);
+          EnigmailStdlib.msgHdrsModifyRaw([msgHdr], function(data) {
+            EnigmailWks.confirmKey(maybeIdent.identity,data,window,function(ret) {
+              if(ret) {
+                EnigmailDialog.alert(window,EnigmailLocale.getString("wksConfirmSuccess"));
+              } else {
+                EnigmailDialog.alert(window,EnigmailLocale.getString("wksConfirmFailure"));
+              }
+            });
             return null;
           });
         } else {
