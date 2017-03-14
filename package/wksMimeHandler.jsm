@@ -19,6 +19,9 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm"); /*global XPCOMUtils: false *
 Cu.import("resource://enigmail/mimeVerify.jsm"); /*global EnigmailVerify: false */
 Cu.import("resource://enigmail/log.jsm"); /*global EnigmailLog: false */
 Cu.import("resource://enigmail/locale.jsm"); /*global EnigmailLocale: false */
+Cu.import("resource://enigmail/decryption.jsm"); /*global EnigmailDecryption: false */
+
+const APPSHELL_MEDIATOR_CONTRACTID = "@mozilla.org/appshell/window-mediator;1";
 
 var gConv = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(Ci.nsIStringInputStream);
 var gDebugLog = false;
@@ -97,11 +100,82 @@ PgpWkdHandler.prototype = {
     }
   },
 
-  onStopRequest: function() {
-    EnigmailLog.DEBUG("wksMimeHandler.jsm: onStopRequest\n");
 
+    
+  onStopRequest: function() {
+
+      var listener_api = {
+	  init: function(data) {
+	      this.data = data;
+	      this.closePipe = false;
+	      this.result = "";
+	      this.status = "";
+	      this.exitCode = 0;
+	  },
+	  stdin: function(pipe) {
+	      if (this.data.length > 0) {
+		  pipe.write(this.data);
+		  this.data = "";
+		  if (this.closePipe) {
+		      pipe.close();
+		  }
+	      }
+	  },
+	  stdout: function(s) {
+	      this.result += s;
+	  },
+	  stderr: function(s) {
+	      this.status += s;
+	  },
+	  done: function(exitCode) {
+	      this.exitCode = exitCode;
+	      if (!this.result.endsWith("\n")) {
+		  this.result += "\r\n";
+	      }
+	  }
+      };
+      let pgp = this.data;
+      var listener = Object.create(listener_api);
+      listener.init(pgp);
+      var maxOutput = pgp.length * 100;
+      var statusFlagsObj = {};
+      var errorMsgObj = {};
+      var windowManager = Cc[APPSHELL_MEDIATOR_CONTRACTID].getService(Ci.nsIWindowMediator);
+      var win = windowManager.getMostRecentWindow(null);
+      EnigmailLog.DEBUG("wksMimeHandler.jsm: onStopRequest: START DECRYPTION\n");
+      var proc = EnigmailDecryption.decryptMessageStart(win, false, false, listener, statusFlagsObj, errorMsgObj, null, maxOutput);
+      if (!proc) return;
+      if (pgp == "") {
+	  pgp = "NO DATA\n";
+      }
+
+      if (listener.pipe) {
+	  listener.pipe.write(listener.data);
+	  listener.data = "";
+	  listener.pipe.close();
+      }
+      else {
+	  listener.closePipe = true;
+      }
+
+      proc.wait();
+
+      var returnStatus = {};
+      EnigmailLog.DEBUG("wksMimeHandler.jsm: onStopRequest: END DECRYPTION\n");
+      EnigmailDecryption.decryptMessageEnd(listener.status,
+					   listener.exitCode,
+					   listener.result.length,
+					   false,
+					   false,
+					   Ci.nsIEnigmail.UI_PGP_MIME,
+					   returnStatus);
+      this.data = listener.result;
+      EnigmailLog.DEBUG("wksMimeHandler.jsm: onStopRequest: END DECRYPTION RESULT: " + this.data + "\n");
+      
+      
     let jsonStr = this.requestToJsonString();
     let msg = "";
+    EnigmailLog.DEBUG("wksMimeHandler.jsm: onStopRequest: " + jsonStr + "\n");
 
     if (this.data.search(/^\s*type:\s+confirmation-request/mi) >= 0) {
       msg = EnigmailLocale.getString("wkdMessage.body.req");
@@ -116,7 +190,9 @@ PgpWkdHandler.prototype = {
 
   // convert request data into JSON-string and parse it
   requestToJsonString: function() {
-    // convert
+      // convert
+    EnigmailLog.DEBUG("wksMimeHandler.jsm: requestToJsonString: " + this.data + "\n");
+    
     let lines = this.data.split(/\r?\n/);
     let s = '{';
     for (let l of lines) {

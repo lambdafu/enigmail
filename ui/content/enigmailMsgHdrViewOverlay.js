@@ -445,19 +445,23 @@ Enigmail.hdrView = {
    * Check whether we got a WKS request
    */
   checkWksConfirmRequest: function(jsonStr) {
+      EnigmailLog.DEBUG("enigmailMsgHdrViewOverlay.js: checkWksConfirmRequest " + jsonStr + "\n");
     let requestObj;
     try {
       requestObj = JSON.parse(jsonStr);
     }
     catch (ex) {
+      EnigmailLog.DEBUG("enigmailMsgHdrViewOverlay.js: checkWksConfirmRequest parsing json failed\n");
       return;
     }
 
     if ("type" in requestObj && requestObj.type.toLowerCase() === "confirmation-request") {
       let view = Enigmail.hdrView;
       EnigmailWks.getWksClientPathAsync(window, function _res(wksClientPath) {
-        if (!wksClientPath) return;
-
+          if (!wksClientPath) {
+      EnigmailLog.DEBUG("enigmailMsgHdrViewOverlay.js: no wksClientPath\n");
+	      return;
+	  }
         view.setStatusText(EnigmailLocale.getString("wksConfirmationReq"));
         view.enigmailBox.removeAttribute("collapsed");
         document.getElementById("enigmail_confirmKey").removeAttribute("hidden");
@@ -465,6 +469,10 @@ Enigmail.hdrView = {
         view.enigmailBox.setAttribute("class", "expandedEnigmailBox enigmailHeaderBoxLabelSignatureUnknown");
       });
     }
+      else
+      {
+      EnigmailLog.DEBUG("enigmailMsgHdrViewOverlay.js: checkWksConfirmRequest failed condition\n");
+      }
   },
 
   displayStatusBar: function() {
