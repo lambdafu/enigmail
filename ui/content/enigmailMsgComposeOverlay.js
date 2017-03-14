@@ -2791,15 +2791,12 @@ Enigmail.msg = {
       var tries = 0;
 
       while (tries < 2) {
-        if (tries === 0) {
+        if (tries == 1) {
           window.openDialog("chrome://enigmail/content/enigmailLocateKeys.xul", "", "dialog,modal,centerscreen,resizable", inputObj, resultObj);
         } else {
           // perform key selection dialog:
           window.openDialog("chrome://enigmail/content/enigmailKeySelection.xul", "", "dialog,modal,centerscreen,resizable", inputObj, resultObj);
         }
-
-				EnigmailLog.DEBUG(JSON.stringify(resultObj));
-        tries += 1;
 
         // process result from key selection dialog:
         try {
